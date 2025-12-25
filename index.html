@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart OCR Pro - Data Extractor</title>
+  <title>Smart OCR Pro - Leaderboard Extractor</title>
   <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
   
@@ -15,101 +15,20 @@
       --card: #ffffff;
       --text: #1e293b;
     }
-
-    body {
-      font-family: 'Kanit', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-
+    body { font-family: 'Kanit', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; padding: 20px; }
     .container { width: 100%; max-width: 800px; }
-
-    .card {
-      background: var(--card);
-      border-radius: 20px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      padding: 30px;
-    }
-
+    .card { background: var(--card); border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); padding: 30px; }
     header { text-align: center; margin-bottom: 25px; }
     h1 { color: var(--primary); margin: 0; font-size: 1.8rem; }
-    p.desc { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
-
-    #dropzone {
-      border: 2px dashed #cbd5e1;
-      background: #f8fafc;
-      border-radius: 15px;
-      padding: 50px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-    }
-
+    #dropzone { border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 15px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.2s; }
     #dropzone:hover { border-color: var(--primary); background: #f5f7ff; }
-    #dropzone.dragover { border-color: var(--primary); background: #e0e7ff; transform: scale(1.01); }
-
-    .status-container {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 10px;
-      background: #eef2ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      color: var(--primary);
-      font-weight: 500;
-    }
-
-    .loader {
-      border: 3px solid #e2e8f0;
-      border-top: 3px solid var(--primary);
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      animation: spin 1s linear infinite;
-    }
-
+    .status-container { margin-top: 20px; padding: 12px; border-radius: 10px; background: #eef2ff; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--primary); }
+    .loader { border: 3px solid #e2e8f0; border-top: 3px solid var(--primary); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
     .result-section { margin-top: 25px; }
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 350px;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 15px;
-      font-family: 'Courier New', monospace;
-      font-size: 16px;
-      line-height: 1.6;
-      resize: vertical;
-      box-sizing: border-box;
-      outline: none;
-    }
-
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .btn:hover { background: var(--primary-hover); }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    textarea { width: 100%; height: 350px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; font-family: 'Courier New', monospace; font-size: 16px; line-height: 1.6; box-sizing: border-box; outline: none; }
+    .btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -118,24 +37,23 @@
 <div class="container">
   <div class="card">
     <header>
-      <h1>Smart OCR Pro</h1>
-      <p class="desc">เน้นดึงข้อมูล <b>ชื่อ + ตัวเลข</b> | รองรับ Ctrl+V เพื่อวางรูป</p>
+      <h1>Leaderboard OCR</h1>
+      <p style="color:#64748b">วางรูป (Ctrl+V) เพื่อดึงชื่อและคะแนน</p>
     </header>
 
     <div id="dropzone">
-      <span style="font-size: 40px;">📸</span>
-      <p>ลากรูปมาวาง, คลิกเพื่อเลือก หรือ <strong>กด Ctrl+V เพื่อวางรูปภาพ</strong></p>
+      <p>📸 คลิกเลือกรูป หรือ <strong>กด Ctrl+V เพื่อวาง</strong></p>
       <input type="file" id="fileInput" accept="image/*" hidden />
     </div>
 
     <div id="statusBox" class="status-container hidden">
       <div class="loader"></div>
-      <span id="statusText">กำลังเตรียมระบบ...</span>
+      <span id="statusText">กำลังประมวลผล...</span>
     </div>
 
     <div class="result-section">
       <div class="toolbar">
-        <strong>ข้อมูลที่พบ:</strong>
+        <strong>ข้อมูลที่สกัดได้:</strong>
         <button class="btn" id="copyBtn">คัดลอกข้อความ</button>
       </div>
       <textarea id="result" placeholder="ผลลัพธ์จะปรากฏที่นี่..."></textarea>
@@ -149,107 +67,82 @@
   const resultArea = document.getElementById("result");
   const statusBox = document.getElementById("statusBox");
   const statusText = document.getElementById("statusText");
-  const copyBtn = document.getElementById("copyBtn");
 
   let worker = null;
 
-  // 1. โหลด Worker รอไว้ล่วงหน้า (Pre-warm)
   async function initWorker() {
-    showStatus("กำลังเตรียมระบบ OCR (tha+eng)...");
-    worker = await Tesseract.createWorker('tha+eng', 1, {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          showStatus(`กำลังประมวลผล: ${(m.progress * 100).toFixed(0)}%`);
-        }
-      }
-    });
+    showStatus("กำลังเตรียมระบบ...");
+    worker = await Tesseract.createWorker('tha+eng');
     hideStatus();
   }
   initWorker();
 
-  // 2. ฟังก์ชันประมวลผลรูปภาพ
   async function processImage(file) {
-    if (!file || !file.type.startsWith('image/')) return;
-    if (!worker) {
-      alert("กรุณารอสักครู่ ระบบกำลังโหลด Model...");
-      return;
-    }
+    if (!file || !worker) return;
+    showStatus("กำลังอ่านรูปภาพ...");
+    resultArea.value = "กำลังประมวลผล...";
 
-    showStatus("กำลังอ่านข้อมูลจากรูปภาพ...");
-    resultArea.value = "กำลังวิเคราะห์...";
-    
     try {
+      // ใช้ความสามารถในการอ่านแบบเก็บโครงสร้างบรรทัด
       const { data: { text } } = await worker.recognize(file);
       
-      // --- ระบบกรองข้อความ (Data Cleaning Logic) ---
-      const lines = text.split('\n');
-      const filteredLines = lines
-        .map(line => {
-          // ลบสัญลักษณ์แปลกๆ ออกก่อน (คงเหลือแค่ ตัวอักษร, ตัวเลข, ช่องว่าง, คอมม่า)
-          const cleanLine = line.replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s,]/g, '').trim();
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l !== "");
+      let output = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        let currentLine = lines[i];
+
+        // 1. ทำความสะอาดข้อความเบื้องต้น
+        let cleanText = currentLine.replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s,]/g, '').trim();
+
+        // 2. ตรวจสอบว่ามีตัวเลขคะแนนในบรรทัดนี้ไหม (ตัวเลข 4 หลักขึ้นไป)
+        const scoreMatch = cleanText.match(/(\d{1,3}(,\d{3})+|\d{4,})/);
+        
+        if (scoreMatch) {
+          const score = scoreMatch[0];
+          // พยายามหาชื่อ: ชื่อมักจะอยู่ก่อนหน้าคะแนนในบรรทัดเดียวกัน หรืออยู่บรรทัดก่อนหน้า
+          let namePart = cleanText.replace(score, '').trim();
           
-          // Regex: ค้นหาข้อความ (ชื่อ) ตามด้วย ตัวเลข (คะแนน)
-          // รูปแบบ: [ชื่อ] [ช่องว่าง] [ตัวเลขที่มีคอมม่าหรือจุดได้]
-          const match = cleanLine.match(/^([a-zA-Zก-ฮ0-9_]{2,})\s+([\d,.]+)/);
-          
-          if (match) {
-            return `${match[1]} ${match[2]}`;
-          }
-          
-          // กรณีตัวเลขนำหน้า (บางที OCR อ่านเลขลำดับมาด้วย)
-          const matchWithRank = cleanLine.match(/^\d+\s+([a-zA-Zก-ฮ0-9_]{2,})\s+([\d,.]+)/);
-          if (matchWithRank) {
-            return `${matchWithRank[1]} ${matchWithRank[2]}`;
+          // ถ้าบรรทัดนี้ไม่มีชื่อ ให้ไปดูบรรทัดก่อนหน้า (เผื่อ OCR แยกบรรทัดชื่อกับคะแนน)
+          if (namePart.length < 2 && i > 0) {
+            namePart = lines[i-1].replace(/[^\u0E00-\u0E7Fa-zA-Z0-9]/g, '').trim();
           }
 
-          return null;
-        })
-        .filter(item => item !== null);
+          // กรองคำว่า "Slow" หรือชื่อกิลด์ออกถ้ามันมาติดกับชื่อ
+          namePart = namePart.replace(/Slow/gi, '').trim();
 
-      resultArea.value = filteredLines.join('\n') || "ไม่พบข้อมูลชื่อและตัวเลขที่ชัดเจน";
-      
+          if (namePart.length >= 2) {
+            output.push(`${namePart} ${score}`);
+          }
+        }
+      }
+
+      // ลบบรรทัดที่ซ้ำกันออก (บางที OCR อ่านซ้ำ)
+      const finalResult = [...new Set(output)];
+      resultArea.value = finalResult.join('\n') || "ไม่พบข้อมูล กรุณาลองใช้รูปที่ชัดขึ้น";
+
     } catch (err) {
-      resultArea.value = "เกิดข้อผิดพลาด: " + err.message;
+      resultArea.value = "Error: " + err.message;
     }
     hideStatus();
   }
 
-  // 3. Event Listeners
+  // Event Listeners
   dropzone.onclick = () => fileInput.click();
   fileInput.onchange = e => processImage(e.target.files[0]);
-
-  dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
-  dropzone.ondragleave = () => dropzone.classList.remove("dragover");
-  dropzone.ondrop = e => {
-    e.preventDefault();
-    dropzone.classList.remove("dragover");
-    processImage(e.dataTransfer.files[0]);
-  };
-
-  // รองรับการกด Ctrl + V
   window.addEventListener('paste', e => {
-    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf("image") !== -1) {
-        processImage(items[i].getAsFile());
-      }
+      if (items[i].type.indexOf("image") !== -1) processImage(items[i].getAsFile());
     }
   });
 
-  // 4. Helper Functions
-  function showStatus(msg) {
-    statusBox.classList.remove("hidden");
-    statusText.innerText = msg;
-  }
-  function hideStatus() {
-    statusBox.classList.add("hidden");
-  }
-  copyBtn.onclick = () => {
+  function showStatus(msg) { statusBox.classList.remove("hidden"); statusText.innerText = msg; }
+  function hideStatus() { statusBox.classList.add("hidden"); }
+  document.getElementById("copyBtn").onclick = () => {
     resultArea.select();
     document.execCommand("copy");
-    const oldText = copyBtn.innerText;
-    copyBtn.innerText = "คัดลอกสำเร็จ!";
-    setTimeout(() => copyBtn.innerText = oldText, 2000);
+    alert("คัดลอกแล้ว!");
   };
 </script>
 
