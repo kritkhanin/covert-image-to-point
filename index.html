@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart OCR - Image to Text</title>
+  <title>Smart OCR Pro - Thai/Eng</title>
   <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
   
@@ -11,7 +11,7 @@
     :root {
       --primary: #4f46e5;
       --primary-hover: #4338ca;
-      --bg: #f8fafc;
+      --bg: #f1f5f9;
       --card: #ffffff;
       --text: #1e293b;
     }
@@ -20,234 +20,244 @@
       font-family: 'Kanit', sans-serif;
       background-color: var(--bg);
       color: var(--text);
+      margin: 0;
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
+      padding: 20px;
     }
 
     .container {
       width: 100%;
-      max-width: 700px;
-      padding: 20px;
+      max-width: 800px;
     }
 
     .card {
       background: var(--card);
-      border-radius: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
       padding: 30px;
     }
 
-    h2 {
+    header {
       text-align: center;
-      margin-top: 0;
-      color: var(--primary);
-    }
-
-    p.subtitle {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #64748b;
       margin-bottom: 25px;
     }
 
+    h1 { color: var(--primary); margin: 0; font-size: 1.8rem; }
+    p.desc { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
+
+    /* Dropzone area */
     #dropzone {
       border: 2px dashed #cbd5e1;
-      background: #f1f5f9;
-      border-radius: 12px;
-      padding: 50px 20px;
+      background: #f8fafc;
+      border-radius: 15px;
+      padding: 60px 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease-in-out;
       position: relative;
     }
 
     #dropzone:hover {
       border-color: var(--primary);
-      background: #eef2ff;
+      background: #f5f7ff;
     }
 
     #dropzone.dragover {
       border-color: var(--primary);
       background: #e0e7ff;
-      transform: scale(1.02);
+      transform: scale(1.01);
     }
 
-    .icon-upload {
-      font-size: 40px;
-      display: block;
-      margin-bottom: 10px;
+    .upload-icon { font-size: 48px; display: block; margin-bottom: 10px; }
+
+    /* Progress & Status */
+    .status-container {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
     }
 
-    .output-area {
+    .loader {
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Result Area */
+    .result-section {
       margin-top: 25px;
     }
 
-    .label-group {
+    .toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     textarea {
       width: 100%;
-      height: 200px;
+      height: 300px;
       border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 12px;
-      font-family: 'monospace';
-      font-size: 14px;
+      border-radius: 12px;
+      padding: 15px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 15px;
+      line-height: 1.6;
       resize: vertical;
       box-sizing: border-box;
       outline: none;
-      transition: border-color 0.2s;
+      background: #fff;
     }
 
-    textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
+    textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
 
-    .btn-copy {
+    .btn {
       background: var(--primary);
       color: white;
       border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.8rem;
-      transition: background 0.2s;
+      font-weight: 500;
+      transition: 0.2s;
     }
 
-    .btn-copy:hover {
-      background: var(--primary-hover);
-    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
-    /* Loading Spinner */
-    .loader {
-      display: none;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid var(--primary);
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      margin-right: 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .status-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 15px;
-      font-size: 0.9rem;
-      color: var(--primary);
-    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="card">
-    <h2>Smart OCR</h2>
-    <p class="subtitle">ลากวางรูป, เลือกไฟล์ หรือ <b>กด Ctrl+V เพื่อวางรูป</b></p>
+    <header>
+      <h1>Smart OCR Pro</h1>
+      <p class="desc">รองรับ ภาษาไทย / English • ลากวาง • <b>Ctrl + V เพื่อวาง</b></p>
+    </header>
 
     <div id="dropzone">
-      <span class="icon-upload">📁</span>
-      คลิกเพื่อเลือกไฟล์ หรือ วางรูปภาพที่นี่
+      <span class="upload-icon">📄</span>
+      <p>คลิกเพื่อเลือกไฟล์, ลากรูปมาวาง หรือ <strong>กด Ctrl+V</strong></p>
       <input type="file" id="fileInput" accept="image/*" hidden />
     </div>
 
-    <div class="status-container" id="statusBox" style="display:none;">
-      <div class="loader" id="loader"></div>
-      <span id="statusText">กำลังประมวลผล...</span>
+    <div id="statusBox" class="status-container hidden">
+      <div class="loader"></div>
+      <span id="statusText">กำลังเตรียมระบบ...</span>
     </div>
 
-    <div class="output-area">
-      <div class="label-group">
-        <span>ผลลัพธ์:</span>
-        <button class="btn-copy" onclick="copyResult()">คัดลอกข้อความ</button>
+    <div class="result-section">
+      <div class="toolbar">
+        <strong>ข้อความที่สกัดได้:</strong>
+        <button class="btn" id="copyBtn">คัดลอกทั้งหมด</button>
       </div>
-      <textarea id="result" placeholder="ข้อความที่สกัดได้จะแสดงที่นี่..."></textarea>
+      <textarea id="result" placeholder="ผลลัพธ์จะแสดงตรงนี้..."></textarea>
     </div>
   </div>
 </div>
 
 <script>
-  const dz = document.getElementById("dropzone");
-  const fi = document.getElementById("fileInput");
-  const result = document.getElementById("result");
+  const dropzone = document.getElementById("dropzone");
+  const fileInput = document.getElementById("fileInput");
+  const resultArea = document.getElementById("result");
   const statusBox = document.getElementById("statusBox");
   const statusText = document.getElementById("statusText");
+  const copyBtn = document.getElementById("copyBtn");
 
-  // คลิกเพื่อเลือกไฟล์
-  dz.onclick = () => fi.click();
+  let worker = null;
 
-  // Drag and Drop
-  dz.ondragover = e => { e.preventDefault(); dz.classList.add("dragover"); };
-  dz.ondragleave = () => dz.classList.remove("dragover");
-  dz.ondrop = e => {
+  // 1. Initialize Worker (Pre-load Model)
+  async function initWorker() {
+    showStatus("กำลังดาวน์โหลด Model ภาษา (ครั้งแรกครั้งเดียว)...");
+    try {
+      worker = await Tesseract.createWorker('tha+eng', 1, {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            showStatus(`กำลังประมวลผล: ${(m.progress * 100).toFixed(0)}%`);
+          }
+        }
+      });
+      hideStatus();
+    } catch (err) {
+      showStatus("เกิดข้อผิดพลาดในการโหลดโมเดล: " + err.message);
+    }
+  }
+  initWorker();
+
+  // 2. File Handling Logic
+  async function processImage(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    if (!worker) {
+      alert("ระบบยังไม่พร้อม กรุณารอสักครู่...");
+      return;
+    }
+
+    showStatus("กำลังอ่านรูปภาพ...");
+    resultArea.value = "ประมวลผลข้อความ...";
+    
+    try {
+      const { data: { text } } = await worker.recognize(file);
+      resultArea.value = text.trim() || "ไม่พบข้อความในรูปภาพนี้";
+    } catch (err) {
+      resultArea.value = "เกิดข้อผิดพลาด: " + err.message;
+    }
+    hideStatus();
+  }
+
+  // 3. Event Listeners (Drop, Click, Paste)
+  dropzone.onclick = () => fileInput.click();
+  fileInput.onchange = e => processImage(e.target.files[0]);
+
+  dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
+  dropzone.ondragleave = () => dropzone.classList.remove("dragover");
+  dropzone.ondrop = e => {
     e.preventDefault();
-    dz.classList.remove("dragover");
-    handleFile(e.dataTransfer.files[0]);
+    dropzone.classList.remove("dragover");
+    processImage(e.dataTransfer.files[0]);
   };
-  fi.onchange = e => handleFile(e.target.files[0]);
 
-  // CTRL+V (Paste) support
+  // ก๊อปปี้วาง (Ctrl+V)
   window.addEventListener('paste', e => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
         const blob = items[i].getAsFile();
-        handleFile(blob);
+        processImage(blob);
       }
     }
   });
 
-  function handleFile(file) {
-    if (!file || !file.type.startsWith('image/')) return;
-    
-    // Show Loading
-    statusBox.style.display = "flex";
-    result.value = "";
-    
-    // ใช้ tha+eng เพื่อให้อ่านภาษาไทยได้ด้วย
-    Tesseract.recognize(file, 'tha+eng', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          statusText.innerText = `กำลังอ่านข้อความ... ${(m.progress * 100).toFixed(0)}%`;
-        }
-      }
-    }).then(({ data: { text } }) => {
-      // Logic การกรองข้อความ (ปรับตามความต้องการ)
-      const lines = text.split("\n");
-      const output = lines
-        .map(l => l.trim())
-        .filter(l => l.length > 0); // กรองบรรทัดว่างออก
-
-      result.value = output.join("\n");
-      statusBox.style.display = "none";
-    }).catch(err => {
-      console.error(err);
-      statusText.innerText = "เกิดข้อผิดพลาด!";
-      statusBox.style.display = "flex";
-      document.getElementById("loader").style.display = "none";
-    });
+  // 4. Utility Functions
+  function showStatus(msg) {
+    statusBox.classList.remove("hidden");
+    statusText.innerText = msg;
   }
 
-  function copyResult() {
-    result.select();
+  function hideStatus() {
+    statusBox.classList.add("hidden");
+  }
+
+  copyBtn.onclick = () => {
+    resultArea.select();
     document.execCommand("copy");
-    alert("คัดลอกลง Clipboard เรียบร้อย!");
-  }
+    const originalText = copyBtn.innerText;
+    copyBtn.innerText = "คัดลอกแล้ว! ✅";
+    setTimeout(() => copyBtn.innerText = originalText, 2000);
+  };
 </script>
 
 </body>
