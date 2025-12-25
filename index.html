@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Image → Text OCR</title>
+  <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+    h2 { margin-bottom: 10px; }
+    #dropzone {
+      border: 2px dashed #888;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+    }
+    #dropzone.dragover {
+      background: #e3f2fd;
+      border-color: #2196f3;
+    }
+    textarea {
+      width: 100%;
+      height: 260px;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>ลากรูปมาวาง → แปลงเป็น Text</h2>
+
+<div id="dropzone">
+  ลากรูปมาวางที่นี่ หรือคลิกเพื่อเลือกรูป
+  <input type="file" id="fileInput" accept="image/*" hidden />
+</div>
+
+<textarea id="result" placeholder="ผลลัพธ์..."></textarea>
+
+<script>
+  const dz = document.getElementById("dropzone");
+  const fi = document.getElementById("fileInput");
+  const result = document.getElementById("result");
+
+  dz.onclick = () => fi.click();
+
+  dz.ondragover = e => {
+    e.preventDefault();
+    dz.classList.add("dragover");
+  };
+  dz.ondragleave = () => dz.classList.remove("dragover");
+  dz.ondrop = e => {
+    e.preventDefault();
+    dz.classList.remove("dragover");
+    handleFile(e.dataTransfer.files[0]);
+  };
+  fi.onchange = e => handleFile(e.target.files[0]);
+
+  function handleFile(file) {
+    if (!file) return;
+    result.value = "กำลังประมวลผล...\n";
+
+    Tesseract.recognize(file, "eng")
+      .then(({ data: { text } }) => {
+        const lines = text.split("\n");
+        const output = lines
+          .map(l => l.trim())
+          .filter(l => /\d/.test(l))
+          .map(l => {
+            const m = l.match(/^(.+?)\s+([\d,]+)/);
+            return m ? `${m[1]} ${m[2]}` : null;
+          })
+          .filter(Boolean);
+
+        result.value = output.join("\n");
+      });
+  }
+</script>
+
+</body>
+</html>
