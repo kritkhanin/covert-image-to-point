@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart OCR Pro - Thai/Eng</title>
+  <title>Smart OCR Pro - Data Extractor</title>
   <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
   
@@ -26,10 +26,7 @@
       padding: 20px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 800px;
-    }
+    .container { width: 100%; max-width: 800px; }
 
     .card {
       background: var(--card);
@@ -38,49 +35,34 @@
       padding: 30px;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-
+    header { text-align: center; margin-bottom: 25px; }
     h1 { color: var(--primary); margin: 0; font-size: 1.8rem; }
     p.desc { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
 
-    /* Dropzone area */
     #dropzone {
       border: 2px dashed #cbd5e1;
       background: #f8fafc;
       border-radius: 15px;
-      padding: 60px 20px;
+      padding: 50px 20px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s ease-in-out;
-      position: relative;
     }
 
-    #dropzone:hover {
-      border-color: var(--primary);
-      background: #f5f7ff;
-    }
+    #dropzone:hover { border-color: var(--primary); background: #f5f7ff; }
+    #dropzone.dragover { border-color: var(--primary); background: #e0e7ff; transform: scale(1.01); }
 
-    #dropzone.dragover {
-      border-color: var(--primary);
-      background: #e0e7ff;
-      transform: scale(1.01);
-    }
-
-    .upload-icon { font-size: 48px; display: block; margin-bottom: 10px; }
-
-    /* Progress & Status */
     .status-container {
       margin-top: 20px;
       padding: 15px;
       border-radius: 10px;
-      background: #f1f5f9;
+      background: #eef2ff;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 12px;
+      color: var(--primary);
+      font-weight: 500;
     }
 
     .loader {
@@ -94,10 +76,7 @@
 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Result Area */
-    .result-section {
-      margin-top: 25px;
-    }
+    .result-section { margin-top: 25px; }
 
     .toolbar {
       display: flex;
@@ -108,20 +87,17 @@
 
     textarea {
       width: 100%;
-      height: 300px;
+      height: 350px;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 15px;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
       line-height: 1.6;
       resize: vertical;
       box-sizing: border-box;
       outline: none;
-      background: #fff;
     }
-
-    textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
 
     .btn {
       background: var(--primary);
@@ -131,12 +107,9 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: 500;
-      transition: 0.2s;
     }
 
     .btn:hover { background: var(--primary-hover); }
-    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-
     .hidden { display: none !important; }
   </style>
 </head>
@@ -146,12 +119,12 @@
   <div class="card">
     <header>
       <h1>Smart OCR Pro</h1>
-      <p class="desc">รองรับ ภาษาไทย / English • ลากวาง • <b>Ctrl + V เพื่อวาง</b></p>
+      <p class="desc">เน้นดึงข้อมูล <b>ชื่อ + ตัวเลข</b> | รองรับ Ctrl+V เพื่อวางรูป</p>
     </header>
 
     <div id="dropzone">
-      <span class="upload-icon">📄</span>
-      <p>คลิกเพื่อเลือกไฟล์, ลากรูปมาวาง หรือ <strong>กด Ctrl+V</strong></p>
+      <span style="font-size: 40px;">📸</span>
+      <p>ลากรูปมาวาง, คลิกเพื่อเลือก หรือ <strong>กด Ctrl+V เพื่อวางรูปภาพ</strong></p>
       <input type="file" id="fileInput" accept="image/*" hidden />
     </div>
 
@@ -162,10 +135,10 @@
 
     <div class="result-section">
       <div class="toolbar">
-        <strong>ข้อความที่สกัดได้:</strong>
-        <button class="btn" id="copyBtn">คัดลอกทั้งหมด</button>
+        <strong>ข้อมูลที่พบ:</strong>
+        <button class="btn" id="copyBtn">คัดลอกข้อความ</button>
       </div>
-      <textarea id="result" placeholder="ผลลัพธ์จะแสดงตรงนี้..."></textarea>
+      <textarea id="result" placeholder="ผลลัพธ์จะปรากฏที่นี่..."></textarea>
     </div>
   </div>
 </div>
@@ -180,45 +153,68 @@
 
   let worker = null;
 
-  // 1. Initialize Worker (Pre-load Model)
+  // 1. โหลด Worker รอไว้ล่วงหน้า (Pre-warm)
   async function initWorker() {
-    showStatus("กำลังดาวน์โหลด Model ภาษา (ครั้งแรกครั้งเดียว)...");
-    try {
-      worker = await Tesseract.createWorker('tha+eng', 1, {
-        logger: m => {
-          if (m.status === 'recognizing text') {
-            showStatus(`กำลังประมวลผล: ${(m.progress * 100).toFixed(0)}%`);
-          }
+    showStatus("กำลังเตรียมระบบ OCR (tha+eng)...");
+    worker = await Tesseract.createWorker('tha+eng', 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          showStatus(`กำลังประมวลผล: ${(m.progress * 100).toFixed(0)}%`);
         }
-      });
-      hideStatus();
-    } catch (err) {
-      showStatus("เกิดข้อผิดพลาดในการโหลดโมเดล: " + err.message);
-    }
+      }
+    });
+    hideStatus();
   }
   initWorker();
 
-  // 2. File Handling Logic
+  // 2. ฟังก์ชันประมวลผลรูปภาพ
   async function processImage(file) {
     if (!file || !file.type.startsWith('image/')) return;
     if (!worker) {
-      alert("ระบบยังไม่พร้อม กรุณารอสักครู่...");
+      alert("กรุณารอสักครู่ ระบบกำลังโหลด Model...");
       return;
     }
 
-    showStatus("กำลังอ่านรูปภาพ...");
-    resultArea.value = "ประมวลผลข้อความ...";
+    showStatus("กำลังอ่านข้อมูลจากรูปภาพ...");
+    resultArea.value = "กำลังวิเคราะห์...";
     
     try {
       const { data: { text } } = await worker.recognize(file);
-      resultArea.value = text.trim() || "ไม่พบข้อความในรูปภาพนี้";
+      
+      // --- ระบบกรองข้อความ (Data Cleaning Logic) ---
+      const lines = text.split('\n');
+      const filteredLines = lines
+        .map(line => {
+          // ลบสัญลักษณ์แปลกๆ ออกก่อน (คงเหลือแค่ ตัวอักษร, ตัวเลข, ช่องว่าง, คอมม่า)
+          const cleanLine = line.replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s,]/g, '').trim();
+          
+          // Regex: ค้นหาข้อความ (ชื่อ) ตามด้วย ตัวเลข (คะแนน)
+          // รูปแบบ: [ชื่อ] [ช่องว่าง] [ตัวเลขที่มีคอมม่าหรือจุดได้]
+          const match = cleanLine.match(/^([a-zA-Zก-ฮ0-9_]{2,})\s+([\d,.]+)/);
+          
+          if (match) {
+            return `${match[1]} ${match[2]}`;
+          }
+          
+          // กรณีตัวเลขนำหน้า (บางที OCR อ่านเลขลำดับมาด้วย)
+          const matchWithRank = cleanLine.match(/^\d+\s+([a-zA-Zก-ฮ0-9_]{2,})\s+([\d,.]+)/);
+          if (matchWithRank) {
+            return `${matchWithRank[1]} ${matchWithRank[2]}`;
+          }
+
+          return null;
+        })
+        .filter(item => item !== null);
+
+      resultArea.value = filteredLines.join('\n') || "ไม่พบข้อมูลชื่อและตัวเลขที่ชัดเจน";
+      
     } catch (err) {
       resultArea.value = "เกิดข้อผิดพลาด: " + err.message;
     }
     hideStatus();
   }
 
-  // 3. Event Listeners (Drop, Click, Paste)
+  // 3. Event Listeners
   dropzone.onclick = () => fileInput.click();
   fileInput.onchange = e => processImage(e.target.files[0]);
 
@@ -230,33 +226,30 @@
     processImage(e.dataTransfer.files[0]);
   };
 
-  // ก๊อปปี้วาง (Ctrl+V)
+  // รองรับการกด Ctrl + V
   window.addEventListener('paste', e => {
-    const items = e.clipboardData.items;
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
-        const blob = items[i].getAsFile();
-        processImage(blob);
+        processImage(items[i].getAsFile());
       }
     }
   });
 
-  // 4. Utility Functions
+  // 4. Helper Functions
   function showStatus(msg) {
     statusBox.classList.remove("hidden");
     statusText.innerText = msg;
   }
-
   function hideStatus() {
     statusBox.classList.add("hidden");
   }
-
   copyBtn.onclick = () => {
     resultArea.select();
     document.execCommand("copy");
-    const originalText = copyBtn.innerText;
-    copyBtn.innerText = "คัดลอกแล้ว! ✅";
-    setTimeout(() => copyBtn.innerText = originalText, 2000);
+    const oldText = copyBtn.innerText;
+    copyBtn.innerText = "คัดลอกสำเร็จ!";
+    setTimeout(() => copyBtn.innerText = oldText, 2000);
   };
 </script>
 
